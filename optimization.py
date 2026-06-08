@@ -3,12 +3,16 @@ import gurobipy as gp
 from gurobipy import GRB
 
 
-id_lodek = ['A', 'B', 'C','D','E','F','G','H','I']
+# id_lodek = ['A', 'B', 'C','D','E','F','G','H','I','J','K']
 
-dlugosci_lodek = np.array([1,2,3,1,1,3,2,1,3]) 
+dlugosci_lodek = np.array([1,2,3,1,1,3,2,1,3,2,1,3,2,2,3,1]) 
+wartosc_za_lodke = {0:1, 1:7, 2:5, 3:3}
+'''
+Dodawanie wartości łódek i funkcja kary dla ograniczenia ilości łódek
+'''
 
-N_lodek = len(id_lodek)
-N_rzedow = 5
+N_lodek = len(dlugosci_lodek)
+N_rzedow = 10
 N_slotow = 2
 
 model = gp.Model("Optymalizacja_Macierzowa")
@@ -16,11 +20,10 @@ model = gp.Model("Optymalizacja_Macierzowa")
 
 M = model.addMVar(shape = (N_lodek,N_rzedow,N_slotow), vtype = GRB.BINARY, name= "Model portu do mapowania łódek")
 
+#Funkcja kary => Jeżeli wystąpi ograniczenie dwóch łódek nakładamy na funkcję celu karę 
 
-f_cel = gp.quicksum(dlugosci_lodek[b] * M[b,i,s]
-                    for b in range(N_lodek)
-                    for i in range(N_rzedow)
-                    for s in range(N_slotow))
+
+f_cel = gp.quicksum(M[b,i,s] * (1 + wartosc_za_lodke[dlugosci_lodek[b]]) for b in range(N_lodek) for i in range(N_rzedow) for s in range(N_slotow)) 
 
 model.setObjective(f_cel, GRB.MAXIMIZE)
 
@@ -40,17 +43,18 @@ for i in range(N_rzedow):
 
 for boat_3 in np.where(dlugosci_lodek == 3)[0]:
     for i in range(N_rzedow):
+        
+                model.addConstr(
+                    (M[boat_3,i,0] == 1) >> (M[:,i,1] == 0),
+                    name = 'Zakaz stawania na przeciwko (dla lewej strony)'
+                )
 
-            model.addConstr(
-                (M[boat_3,i,0] == 1) >> (M[:,i,1] == 0),
-                name = 'Zakaz stawania na przeciwko (dla lewej strony)'
-            )
-
-            model.addConstr(
-                (M[boat_3,i,1] == 1) >> (M[:,i,0] == 0),
-                name = 'Zakaz stawania na przeciwko (dla prawej strony)'
-            )
-
+                model.addConstr(
+                    (M[boat_3,i,1] == 1) >> (M[:,i,0] == 0),
+                    name = 'Zakaz stawania na przeciwko (dla prawej strony)'
+                )
+           
+                 
 #dwie łódki 2 tworzą blokadę
 boat_2 = np.where(dlugosci_lodek == 2)[0]
 
