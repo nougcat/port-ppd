@@ -1,11 +1,13 @@
 import numpy as np
 import gurobipy as gp
 from gurobipy import GRB
+import numpy as np
 
 
 # id_lodek = ['A', 'B', 'C','D','E','F','G','H','I','J','K']
 
-dlugosci_lodek = np.array([1,2,3,1,1,3,2,1,3,2,1,3,2,2,3,1]) 
+#dlugosci_lodek = np.array([1,2,3,1,1,3,2,1,3,2,1,3,2,2,3,1]) 
+dlugosci_lodek = np.random.randint(0,3,100)
 wartosc_za_lodke = {0:1, 1:7, 2:5, 3:3}
 '''
 Dodawanie wartości łódek i funkcja kary dla ograniczenia ilości łódek
