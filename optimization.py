@@ -4,8 +4,7 @@ from gurobipy import GRB
 import numpy as np
 
 
-class Gen:
-     
+class Gen:   
     def __init__(self,lodka,rzad, strona):
           self.lodka = lodka
           self.rzad = rzad
