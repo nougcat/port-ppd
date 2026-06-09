@@ -3,6 +3,8 @@ import gurobipy as gp
 from gurobipy import GRB
 import numpy as np
 
+N_rzedow = 10
+N_slotow = 2
 
 class Gen:   
     def __init__(self,lodka,rzad, strona):
@@ -17,7 +19,6 @@ class Chromosom:
           self.geny = geny
 
     def __repr__(self):
-         
         geny_str = ','.join(str(gen) for gen in self.geny)
         return f'Chromosom([{geny_str}])'         
 
@@ -25,7 +26,7 @@ class Chromosom:
 
 #dlugosci_lodek = np.array([1,2,3,1,1,3,2,1,3,2,1,3,2,2,3,1]) 
 
-dlugosci_lodek = np.random.randint(0,4,10)
+dlugosci_lodek = np.random.randint(0,3,10)
 wartosc_za_lodke = {0:1, 1:7, 2:5, 3:3}
 cena_za_lodke = {0:1, 1:60, 2:70, 3:90}
 
@@ -36,8 +37,7 @@ def optimize_and_save(dlugosci_lodek, wartosc_za_lodke, cena_za_lodke):
     '''
 
     N_lodek = len(dlugosci_lodek)
-    N_rzedow = 10
-    N_slotow = 2
+    
 
     model = gp.Model("Optymalizacja_Macierzowa")
 
@@ -106,7 +106,7 @@ def optimize_and_save(dlugosci_lodek, wartosc_za_lodke, cena_za_lodke):
             for i in range(N_rzedow):
                 for j in range(N_slotow):
                     if M.Xn[b, i, j] > 0.5:   
-                        geny.append(Gen(lodka=b, rzad= i, strona = j))
+                        geny.append(Gen(lodka=dlugosci_lodek[b], rzad= i, strona = j))
 
         populacja.append(Chromosom(geny))
   
