@@ -18,12 +18,12 @@ class Gen:
 
 class Chromosom:
      
-    def __init__(self, geny: list[Gen]):        
+    def __init__(self, geny: list[Gen]):
         self.geny = geny
 
     def __repr__(self):
         geny_str = ','.join(str(gen) for gen in self.geny)
-        return f'Chromosom([{geny_str}]\n\n)'         
+        return f'Chromosom([{geny_str}]\n\n)'
 
 # id_lodek = ['A', 'B', 'C','D','E','F','G','H','I','J','K']
 
@@ -102,30 +102,50 @@ def optimize_and_save(dlugosci_lodek, wartosc_za_lodke, cena_za_lodke):
     model.optimize()
 
     populacja = []
-    for sol in range(model.SolCount):          
+
+
+
+    return {
+        "linear_model": model,
+        "mvar_M": M,
+        "populacja": populacja
+    }
+
+
+output_of_optimalizations = optimize_and_save(dlugosci_lodek, wartosc_za_lodke, cena_za_lodke)
+
+
+
+population = output_of_optimalizations["populacja"]
+M = output_of_optimalizations["mvar_M"]
+
+model = output_of_optimalizations["linear_model"]
+
+
+
+matrix_mapped = np.zeros((N_rzedow, N_slotow))
+
+for b in range(len(dlugosci_lodek)):
+    for i in range(N_rzedow):
+        for s in range(N_slotow):
+            if M[b,i,s].X > 0.5:
+                matrix_mapped[i][s] = dlugosci_lodek[b]
+
+print("Macierz zmapowanych łódek (gurobi):")
+print(matrix_mapped)
+
+for sol in range(1): #model.SolCount          
         model.setParam('SolutionNumber', sol)
         geny = []
-        for b in range(N_lodek):               
+        for b in range(len(dlugosci_lodek)):               
             for i in range(N_rzedow):
                 for j in range(N_slotow):
                     if M.Xn[b, i, j] > 0.5:   
                         geny.append(Gen(lodka=dlugosci_lodek[b], rzad= i, strona = j))
 
-        populacja.append(Chromosom(geny))
-  
+        # print only first solution of genetic algorithm
 
-    matrix_mapped = np.zeros((N_rzedow, N_slotow))
+        print("Rozwiązanie metaheurystyczne 0:")
+        for gen in geny:
+            print(gen)
 
-    for b in range(N_lodek):
-        for i in range(N_rzedow):
-            for s in range(N_slotow):
-                if M[b,i,s].X > 0.5:
-                    matrix_mapped[i][s] = dlugosci_lodek[b]
-
-    print(matrix_mapped)
-
-
-    return populacja
-
-
-genetic_population = optimize_and_save(dlugosci_lodek, wartosc_za_lodke, cena_za_lodke)
