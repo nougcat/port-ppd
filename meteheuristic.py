@@ -3,7 +3,8 @@ import numpy as np
 from optimization import genetic_population, Gen, Chromosom, dlugosci_lodek, cena_za_lodke, wartosc_za_lodke, N_rzedow
 
 
-def mutation(chromosome: Chromosom, N_rzedow: int, prob=0.1):
+
+def mutation(chromosome: Chromosom, N_rzedow: int, prob=0.3):
     '''
     Wybieramy losowy gen z chromosomu i wybieramy dla niego nowe losowe miejsce
     '''
@@ -82,7 +83,7 @@ def selection(populacja: list[Chromosom], oceny, k = 3):
 
     return populacja[best_candidates]
 
-def genetic_algorithm(genetic_population: list[Chromosom], etapy = 100, warunek_stopu = 100):
+def genetic_algorithm(genetic_population: list[Chromosom], etapy = 100, warunek_stopu = 20):
     
     populacja = genetic_population.copy()
 
@@ -100,9 +101,9 @@ def genetic_algorithm(genetic_population: list[Chromosom], etapy = 100, warunek_
 
         max_idx = int(np.argmax(oceny))
         if oceny[max_idx] > best_fit_func:
-            best_fit_func   = oceny[max_idx]
+            best_fit_func = oceny[max_idx]
             best_chromosome = populacja[max_idx]
-            no_changes         = 0
+            no_changes = 0
         else:
             no_changes += 1
  
@@ -133,4 +134,5 @@ def genetic_algorithm(genetic_population: list[Chromosom], etapy = 100, warunek_
  
     return best_chromosome
 
+print(genetic_population)
 print(genetic_algorithm(genetic_population))

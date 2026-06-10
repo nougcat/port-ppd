@@ -12,21 +12,24 @@ class Gen:
           self.rzad = rzad
           self.strona = strona
 
+    def __repr__(self):
+         
+        return f'Gen ({self.lodka},{self.rzad},{self.strona})'
+
 class Chromosom:
      
-    def __init__(self, geny: list[Gen]):
-
-          self.geny = geny
+    def __init__(self, geny: list[Gen]):        
+        self.geny = geny
 
     def __repr__(self):
         geny_str = ','.join(str(gen) for gen in self.geny)
-        return f'Chromosom([{geny_str}])'         
+        return f'Chromosom([{geny_str}]\n\n)'         
 
 # id_lodek = ['A', 'B', 'C','D','E','F','G','H','I','J','K']
 
 #dlugosci_lodek = np.array([1,2,3,1,1,3,2,1,3,2,1,3,2,2,3,1]) 
 
-dlugosci_lodek = np.random.randint(0,3,10)
+dlugosci_lodek = np.random.randint(0,3,20)
 wartosc_za_lodke = {0:1, 1:7, 2:5, 3:3}
 cena_za_lodke = {0:1, 1:60, 2:70, 3:90}
 
@@ -121,7 +124,6 @@ def optimize_and_save(dlugosci_lodek, wartosc_za_lodke, cena_za_lodke):
 
     print(matrix_mapped)
 
-    print(populacja)
 
     return populacja
 
