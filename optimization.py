@@ -18,13 +18,13 @@ class Gen:
 
 class Chromosom:
      
-    def __init__(self, geny: list[Gen]):        
+    def __init__(self, geny: list[Gen]):
         self.geny = geny
         self.fitness = 0
 
     def __repr__(self):
         geny_str = ','.join(str(gen) for gen in self.geny)
-        return f'Chromosom([{geny_str}]\n\n)'         
+        return f'Chromosom([{geny_str}]\n\n)'
 
 # id_lodek = ['A', 'B', 'C','D','E','F','G','H','I','J','K']
 
@@ -108,7 +108,7 @@ def optimize_and_save(dlugosci_lodek, wartosc_za_lodke, cena_za_lodke):
         model.setParam('SolutionNumber', sol)
 
         geny = []
-        for b in range(N_lodek):               
+        for b in range(len(dlugosci_lodek)):               
             for i in range(N_rzedow):
                 for j in range(N_slotow):
                     if M.Xn[b, i, j] > 0.5:   
@@ -131,6 +131,9 @@ def optimize_and_save(dlugosci_lodek, wartosc_za_lodke, cena_za_lodke):
 
     return populacja
 
+        print("Rozwiązanie metaheurystyczne 0:")
+        for gen in geny:
+            print(gen)
 
 genetic_population = optimize_and_save(dlugosci_lodek, wartosc_za_lodke, cena_za_lodke)
 print(genetic_population)
