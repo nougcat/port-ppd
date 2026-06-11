@@ -1,41 +1,92 @@
 import random
 import numpy as np
-from optimization import genetic_population, Gen, Chromosom, dlugosci_lodek, cena_za_lodke, wartosc_za_lodke, N_rzedow
+from optimization import Gen, Chromosom, cena_za_lodke, wartosc_za_lodke, N_rzedow, N_slotow
+import copy
+
+LICZBA_CHROMOSOMOW = 20
+
+def generate_chromosome(N_lodek = 21, N_rzedow = N_rzedow, N_slotow=N_slotow):
+    
+    gene = []
+    idx_boat = np.random.randint(0,3,N_lodek)
+    random.shuffle(idx_boat)
+
+    zajete_sloty = set()
+    zajete_przez_trojki = set()
+
+    for b in idx_boat:
+
+        wolne = []
+        for i in range(N_rzedow):
+            for j in range(N_slotow):
+                if (i,j) in zajete_sloty:
+                    continue
+                if i in zajete_przez_trojki:
+                    continue
+                if b == 3:
+                    if (i, 1 - j) in zajete_sloty:
+                        continue
+                wolne.append((i,j))
+        if not wolne:
+            continue
+    
+        rzad, strona = random.choice(wolne)
+        gene.append(Gen(b, rzad, strona))
+        zajete_sloty.add((rzad, strona))
+
+        if b == 3:
+            zajete_przez_trojki.add(rzad)
+
+    return Chromosom(gene)
+
+def chromosome_to_matrix(chromosome: Chromosom, N_rzedow = N_rzedow, N_slotow = N_slotow) :
+    matrix = np.zeros((N_rzedow, N_slotow), dtype=int)
+    for gen in chromosome.geny:
+        matrix[gen.rzad][gen.strona] = gen.lodka
+    return matrix
 
 
-
-def mutation(chromosome: Chromosom, N_rzedow: int, prob=0.3):
+def mutation(chromosome: Chromosom, N_rzedow: int, prob=0.1):
     '''
     Wybieramy losowy gen z chromosomu i wybieramy dla niego nowe losowe miejsce
     '''
-    mutated_genes = []
-    for gen in chromosome.geny:
-        if random.random() < prob:
-            new_gene = Gen(
-                lodka = gen.lodka,
-                rzad = random.randint(0, N_rzedow - 1),
-                strona = random.randint(0,1)
-            )
-            mutated_genes.append(new_gene)
-        else:
-            mutated_genes.append(gen)
+    geny = [Gen(g.lodka, g.rzad, g.strona) for g in chromosome.geny]
 
-    return Chromosom(mutated_genes)
+    for idx in range(len(geny)):
+        if random.random() > prob:
+            continue
+
+        drugi_idx = random.randint(0, len(geny) - 1)
+        if drugi_idx == idx:
+            continue
+
+        geny[idx].rzad, geny[drugi_idx].rzad = geny[drugi_idx].rzad, geny[idx].rzad
+        geny[idx].strona, geny[drugi_idx].strona = geny[drugi_idx].strona,  geny[idx].strona
+
+    return Chromosom(geny)
 
 def crossing(parent_a: Chromosom, parent_b: Chromosom):
     '''
     Crossing dzieli chromosomy na 3 części. Następnie zamienia środkową część między genami
     '''
-    m = len(parent_a.geny)
-    p1, p2 = sorted(random.sample(range(1, m), 2))
+    geny_a = parent_a.geny
+    geny_b = parent_b.geny
+    m = min(len(geny_a), len(geny_b))
 
-    middle_b = parent_b.geny[p1:p2]
+    p1, p2 = sorted(random.sample(range(m), 2))
 
-  
-    left_a  = parent_a.geny[:p1]
-    right_a = parent_a.geny[p2:]
+    segment = geny_a[p1:p2]
+    zajete = {(g.rzad, g.strona) for g in segment}
 
-    return Chromosom(left_a + middle_b + right_a)
+    dopelnienie = [
+        Gen(g.lodka, g.rzad, g.strona)
+        for g in geny_b
+        if (g.rzad, g.strona) not in zajete
+    ]
+
+    nowe_geny = dopelnienie[:p1] + segment + dopelnienie[p1:]
+
+    return Chromosom(nowe_geny)
 
 def block_dock(chromosome):
 
@@ -53,14 +104,21 @@ def block_dock(chromosome):
 
     return blokady
 
-def fitness_func(chromosome: Chromosom, dlugosci_lodek:list, wartosci_za_lodke:dict):
+def f_cel_value(chromosome: Chromosom):
+    value = 0
+    for gene in chromosome.geny:
+        value += gene.lodka
+    return value
 
-    kara_blokada = 50
-    kara_kolizacja = 100
+def fitness_func(chromosome: Chromosom):
+
+    kara_blokada = 5
+    kara_kolizacja = 10
 
     kara = 0
 
     pozycje = [(gen.rzad, gen.strona) for gen in chromosome.geny]
+
     for pos in pozycje:
         if pozycje.count(pos) > 1:
             kara += kara_kolizacja
@@ -73,19 +131,19 @@ def fitness_func(chromosome: Chromosom, dlugosci_lodek:list, wartosci_za_lodke:d
  
 
     wartosc = sum(wartosc_za_lodke[gen.lodka] for gen in chromosome.geny)
+
+    chromosome.fitness += wartosc - kara
  
-    return wartosc - kara
+    return chromosome.fitness
 
-def selection(populacja: list[Chromosom], oceny, k = 3):
+def selection(populacja: list[Chromosom], k = 3) -> Chromosom:
     
-    candidates = random.sample(range(len(populacja)), k)
-    best_candidates = max(candidates, key = lambda i: oceny[i])
+    candidates = random.sample(populacja, k)
+    return max(candidates, key = lambda ch: ch.fitness)
 
-    return populacja[best_candidates]
-
-def genetic_algorithm(genetic_population: list[Chromosom], etapy = 100, warunek_stopu = 20):
+def genetic_algorithm(population: list[Chromosom], etapy = 100, warunek_stopu = 20):
     
-    populacja = genetic_population.copy()
+    populacja = copy.deepcopy(population)
 
     best_fit_func = float('-inf')
     best_chromosome = None
@@ -93,34 +151,41 @@ def genetic_algorithm(genetic_population: list[Chromosom], etapy = 100, warunek_
 
     for gen in range(etapy):
 
-        oceny = [
-            fitness_func(chrom, dlugosci_lodek,wartosc_za_lodke) for chrom in populacja
-        ]
+        for chrom in populacja:
+            chrom.fitness = 0
+            chrom.fitness = fitness_func(chrom)
+
+        print(f'Fitness w nowej populacji: {[ch.fitness for ch in populacja]}')
+        
 
         #najlepsze chromosomy
 
-        max_idx = int(np.argmax(oceny))
-        if oceny[max_idx] > best_fit_func:
-            best_fit_func = oceny[max_idx]
-            best_chromosome = populacja[max_idx]
+        best_in_gene = max(populacja, key=lambda ch: ch.fitness)
+
+        print(f'max_idx = {best_in_gene}')
+
+        if best_in_gene.fitness > best_fit_func:
+            best_fit_func = best_in_gene.fitness
+            best_chromosome = copy.deepcopy(best_in_gene)
             no_changes = 0
         else:
             no_changes += 1
  
         print(f'Generacja {gen:3d} | fitness: {best_fit_func:.2f} | bez poprawy: {no_changes}')
+        print(f'Najlepszy chromosom: {best_chromosome}')
  
         if no_changes >= warunek_stopu:
             print(f'Zbieżność w generacji {gen}')
             break
  
         # tworzenie nowej populacji
-        new_population = [best_chromosome]  
+        new_population = [copy.deepcopy(best_chromosome)]  
  
         while len(new_population) < len(populacja):
  
             # selekcja turniejowa rodziców
-            parent_a = selection(populacja, oceny)
-            parent_b = selection(populacja, oceny)
+            parent_a = selection(populacja)
+            parent_b = selection(populacja)
  
             # krzyżowanie
             child = crossing(parent_a, parent_b)
@@ -131,8 +196,22 @@ def genetic_algorithm(genetic_population: list[Chromosom], etapy = 100, warunek_
             new_population.append(child)
  
         populacja = new_population
- 
-    return best_chromosome
 
-print(genetic_population)
+        print(f'Długości chromosomów: {[len(ch.geny) for ch in populacja]}')
+ 
+    best_chromosome_mapped = chromosome_to_matrix(best_chromosome)
+
+    max_value = f_cel_value(best_chromosome)
+    print(f'Wartośc funkcji celu wynosi: {max_value}')
+
+    return best_chromosome_mapped
+
+
+
+genetic_population = []
+for _ in range(LICZBA_CHROMOSOMOW):
+    chromosome = generate_chromosome()
+    genetic_population.append(chromosome)
+
+
 print(genetic_algorithm(genetic_population))
