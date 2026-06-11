@@ -20,6 +20,7 @@ class Chromosom:
      
     def __init__(self, geny: list[Gen]):        
         self.geny = geny
+        self.fitness = 0
 
     def __repr__(self):
         geny_str = ','.join(str(gen) for gen in self.geny)
@@ -30,7 +31,7 @@ class Chromosom:
 #dlugosci_lodek = np.array([1,2,3,1,1,3,2,1,3,2,1,3,2,2,3,1]) 
 
 dlugosci_lodek = np.random.randint(0,3,20)
-wartosc_za_lodke = {0:1, 1:7, 2:5, 3:3}
+wartosc_za_lodke = {0:1, 1:6, 2:5, 3:4}
 cena_za_lodke = {0:1, 1:60, 2:70, 3:90}
 
 def optimize_and_save(dlugosci_lodek, wartosc_za_lodke, cena_za_lodke):
@@ -97,19 +98,22 @@ def optimize_and_save(dlugosci_lodek, wartosc_za_lodke, cena_za_lodke):
                         model.addConstr((z==1) >> (M[:,i+1,:].sum() == 0))
 
     model.setParam('PoolSearchMode', 2)
-    model.setParam('PoolSolutions', 20)
-    model.setParam('PoolGap', 0.25)
+    model.setParam('PoolSolutions', 10)
+    model.setParam('PoolGap', 0.9)
     model.optimize()
 
     populacja = []
-    for sol in range(model.SolCount):          
+    for sol in range(model.SolCount):       
+
         model.setParam('SolutionNumber', sol)
+
         geny = []
         for b in range(N_lodek):               
             for i in range(N_rzedow):
                 for j in range(N_slotow):
                     if M.Xn[b, i, j] > 0.5:   
                         geny.append(Gen(lodka=dlugosci_lodek[b], rzad= i, strona = j))
+
 
         populacja.append(Chromosom(geny))
   
@@ -129,3 +133,4 @@ def optimize_and_save(dlugosci_lodek, wartosc_za_lodke, cena_za_lodke):
 
 
 genetic_population = optimize_and_save(dlugosci_lodek, wartosc_za_lodke, cena_za_lodke)
+print(genetic_population)
