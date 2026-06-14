@@ -29,8 +29,8 @@ class Chromosom:
 # id_lodek = ['A', 'B', 'C','D','E','F','G','H','I','J','K']
 
 #dlugosci_lodek = np.array([1,2,3,1,1,3,2,1,3,2,1,3,2,2,3,1]) 
-
-dlugosci_lodek = np.random.randint(0,3,20)
+np.random.seed(67)
+dlugosci_lodek = np.random.randint(0,4,20)
 wartosc_za_lodke = {0:1, 1:6, 2:5, 3:4}
 cena_za_lodke = {0:1, 1:60, 2:70, 3:90}
 
@@ -131,9 +131,6 @@ def optimize_and_save(dlugosci_lodek, wartosc_za_lodke, cena_za_lodke):
 
     return populacja
 
-        print("Rozwiązanie metaheurystyczne 0:")
-        for gen in geny:
-            print(gen)
 
 genetic_population = optimize_and_save(dlugosci_lodek, wartosc_za_lodke, cena_za_lodke)
 print(genetic_population)
