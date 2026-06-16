@@ -99,8 +99,10 @@ def block_dock(chromosome):
     blokady = []
     for j in range(N_rzedow):
         suma = occ[j][0] + occ[j][1]
-        three = occ[j][0]==3 or occ[j][1] ==3
-        blokady.append(1 if suma >=4 or three else 0)
+        trojka_sama = (occ[j][0] == 3 and occ[j][1] == 0) or (occ[j][1] == 3 and occ[j][0] == 0)
+        blokada_twarda = suma >= 4 and not trojka_sama
+    
+        blokady.append(1 if blokada_twarda else 0)
 
     return blokady
 
@@ -114,6 +116,8 @@ def fitness_func(chromosome: Chromosom):
 
     kara_blokada = 5
     kara_kolizacja = 10
+    kara_blokada_rzad = 10
+    
 
     kara = 0
 
@@ -125,6 +129,10 @@ def fitness_func(chromosome: Chromosom):
  
 
     blokady = block_dock(chromosome)
+
+    # for i in range(N_rzedow):
+    #     if blokady[i]:
+    #         kara += kara_blokada_rzad
 
     for gen in chromosome.geny:
         kara += sum(blokady[j] for j in range(gen.rzad)) * kara_blokada
