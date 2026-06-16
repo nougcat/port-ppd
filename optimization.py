@@ -5,6 +5,7 @@ import numpy as np
 
 N_rzedow = 10
 N_slotow = 2
+N_lodek = 21
 
 class Gen:   
     def __init__(self,lodka,rzad, strona):
@@ -30,8 +31,8 @@ class Chromosom:
 
 #dlugosci_lodek = np.array([1,2,3,1,1,3,2,1,3,2,1,3,2,2,3,1]) 
 np.random.seed(67)
-dlugosci_lodek = np.random.randint(0,4,20)
-wartosc_za_lodke = {0:1, 1:6, 2:5, 3:4}
+dlugosci_lodek = np.random.randint(0,4,10)
+wartosc_za_lodke = {0:1, 1:5, 2:5, 3:5}
 cena_za_lodke = {0:1, 1:60, 2:70, 3:90}
 
 def optimize_and_save(dlugosci_lodek, wartosc_za_lodke, cena_za_lodke):

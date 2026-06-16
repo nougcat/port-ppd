@@ -2,20 +2,20 @@ import random
 import numpy as np
 from optimization import Gen, Chromosom, cena_za_lodke, wartosc_za_lodke, N_rzedow, N_slotow
 import copy
+from generate_boat import stala_lista
 
 LICZBA_CHROMOSOMOW = 20
 
-def generate_chromosome(N_lodek = 21, N_rzedow = N_rzedow, N_slotow=N_slotow):
+def generate_chromosome(idx_boat, N_lodek = 21, N_rzedow = N_rzedow, N_slotow=N_slotow):
     
     gene = []
-    idx_boat = np.random.randint(0,3,N_lodek)
     random.shuffle(idx_boat)
 
     zajete_sloty = set()
     zajete_przez_trojki = set()
 
     for b in idx_boat:
-
+            
         wolne = []
         for i in range(N_rzedow):
             for j in range(N_slotow):
@@ -210,7 +210,7 @@ def genetic_algorithm(population: list[Chromosom], etapy = 100, warunek_stopu = 
 
 genetic_population = []
 for _ in range(LICZBA_CHROMOSOMOW):
-    chromosome = generate_chromosome()
+    chromosome = generate_chromosome(stala_lista)
     genetic_population.append(chromosome)
 
 
