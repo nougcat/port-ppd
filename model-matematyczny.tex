@@ -1,0 +1,72 @@
+Dane:
+
+- Typy statków:
+
+\(typy \in {1,2,3}\)
+
+- Liczba statków:
+\(S = 12\)
+
+- Liczba doków:
+
+\(D = 2\)
+
+- Liczba miejsc do cumowania w dokach:
+
+\(C=10\)
+
+- Lista statków:
+\(L=[...]\)
+
+Zmienne decyzyjne:
+
+\begin{equation}
+    M[N][D][C]
+\end{equation}
+
+
+Funkcja celu:
+%  bez premiowania statków
+% \begin{equation}
+%     max \sum_{s=1}^{S} \sum_{d=1}^{D} \sum_{c=0}^{C} M[s][d][c]
+% \end{equation}
+
+\begin{equation}
+    max \sum_{s=1}^{S} L[s] * (\sum_{d=1}^{D} \sum_{c=0}^{C} M[s][d][c])
+\end{equation}
+
+% MOŻLIWĄ koncepkcją jest też to aby zrobić dwie funkcje celu, jedna z premiowaniem statków druga bez premiowania. Wtedy przy maksymalizacji obu będziemy mieć po pierwsze najwięcej wartościowych statków, a w drugiej kolejności po prostu najwięcej statków w porcie.
+
+Ograniczenia:
+
+\begin{equation} \label{eq:uniq}
+    \forall_{s\in S} ( \forall_{d\in D}\forall_{c \in C} M[n][d][s] \leq 1 )
+\end{equation}
+
+W \ref{eq:uniq} zapewniamy, że statek, będzie co najwyżej raz w porcie. 
+
+\begin{equation} \label{eq:no-duplication}
+    \forall_{d\in D}\forall_{c \in C} (\forall_{s \in S} M[n][d][s] \leq 1)
+\end{equation}
+
+W \ref{eq:no-duplication} zapewniamy, że nie ma dwóch statków w tym samym miejscu.
+
+\begin{equation} \label{eq:3jka-blokuje}
+    \begin{split}
+        ((\forall_{s_1\in S}\forall_{d_1\in D}\forall_{c_1 \in C} M[s_1][d_1][c_1] \equiv 1) \land (L[s_1] \equiv 3 )) \implies  \\
+    (\forall_{s_2>s_1} \forall_{d_2 \in D} \forall_{c_2 \leq c} M[s_2][d_2][c_2] \equiv 0)
+    \end{split}
+\end{equation}
+
+W \ref{eq:3jka-blokuje} zapewniamy, że statek o wielkości 3 blokuje część wewnętrzną portu.
+
+\begin{equation} \label{eq:2jka-blokuje}
+    \begin{split}
+        (((\forall_{s_1\in S}\forall_{d_1\in D}\forall_{c_1 \in C}  M[s_1][d_1][c_1] \equiv 1) \land (L[s_1] = 2 )) \land \\
+        ( \exists_{s_2} M[s_2][ \neg d_1][c_1] = 1) \land ( L[s_2] \equiv 2 ))  ) \\
+        \implies (\forall_{s_3>s_1} \forall_{d_2 \in D} \forall_{c_3 \leq c} M[s_3][d][c_3] \equiv 0)
+    \end{split}
+\end{equation}
+
+W \ref{eq:2jka-blokuje} zapewniamy sobie, że dwa statki na przeciwko siebie również blokują wewnętrzną stronę portu.
+
